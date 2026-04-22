@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Category | Aquagel Educational Posters Sri Lanka</title>
+  <meta name="description" id="pageDesc" content="Browse Aquagel educational posters and maps in Sri Lanka. Premium quality classroom posters.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" id="pageCanon" href="https://www.aquagel.lk/category.html">
+  <meta property="og:title" id="ogTitle" content="Category | Aquagel">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="application/ld+json" id="breadcrumbSchema"></script>
+</head>
+<body>
+
+<header id="header">
+  <nav class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="logo"><div class="logo-icon">🗺️</div>Aqua<span>gel</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li class="nav-dropdown"><span>Categories ▾</span><div class="dropdown-menu" id="catDropdown"></div></li>
+        <li><a href="giant-posters.html">Giant Posters</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="nav-search">
+        <button id="navSearchBtn">🔍</button>
+        <input id="navSearchInput" type="text" placeholder="Search posters...">
+      </div>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">🏠 Home</a>
+    <div id="mobileCatLinks"></div>
+    <a href="giant-posters.html">🎨 Giant Posters</a>
+    <a href="search.html">🔍 Search</a>
+  </div>
+</header>
+
+<div id="pageHero" class="page-hero">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="index.html">Home</a>
+      <span>›</span>
+      <a href="search.html">All Products</a>
+      <span>›</span>
+      <span id="breadCurrent"></span>
+    </nav>
+    <h1 id="heroTitle">Category</h1>
+    <p id="heroDesc">Browse our educational posters</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar">
+      <label for="sortSelect">Sort by:</label>
+      <select id="sortSelect">
+        <option value="default">Default</option>
+        <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
+        <option value="newest">Newest First</option>
+      </select>
+      <span class="results-count" id="resultsCount"></span>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+    <div id="noResults" class="no-results" style="display:none">
+      <div class="icon">🔍</div>
+      <h3>No products found</h3>
+      <p>No products in this category yet. Check back soon!</p>
+      <a href="index.html" class="btn btn-primary" style="margin-top:20px">Back to Home</a>
+    </div>
+  </div>
+</section>
+
+<!-- Other categories -->
+<section class="section-sm" style="background:var(--gray-100)">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:28px;font-size:1.5rem">Browse Other Categories</h2>
+    <div class="categories-grid" id="otherCats"></div>
+  </div>
+</section>
+
+<footer style="background:var(--navy-dark);color:rgba(255,255,255,0.7);padding:28px 0;text-align:center">
+  <div class="container">
+    <div class="logo" style="justify-content:center;margin-bottom:12px">
+      <div class="logo-icon">🗺️</div>Aqua<span style="color:var(--gold)">gel</span>
+    </div>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;font-size:0.875rem">
+      <a href="index.html" style="color:rgba(255,255,255,0.7)">Home</a>
+      <a href="giant-posters.html" style="color:rgba(255,255,255,0.7)">Giant Posters</a>
+      <a href="search.html" style="color:rgba(255,255,255,0.7)">All Products</a>
+      <a href="index.html#contact" style="color:rgba(255,255,255,0.7)">Contact</a>
+    </div>
+    <p style="font-size:0.8rem;color:var(--gray-500)">© 2024 Aquagel. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const catId = parseInt(params.get('cat') || '0');
+  const cats = getCategories();
+  const cat = cats.find(c => c.id === catId) || cats[0];
+  let currentProducts = getProductsByCategory(catId);
+
+  // ── SEO ──
+  document.getElementById('pageTitle').textContent = `${cat.name} Educational Posters | Aquagel Sri Lanka`;
+  document.getElementById('pageDesc').content = `Buy ${cat.name.toLowerCase()} educational posters in Sri Lanka. Premium quality ${cat.name.toLowerCase()} maps and posters by Aquagel.`;
+  document.getElementById('ogTitle').content = `${cat.name} | Aquagel Educational Posters`;
+  document.getElementById('breadCurrent').textContent = cat.name;
+  document.getElementById('heroTitle').textContent = cat.icon + ' ' + cat.name;
+  document.getElementById('heroDesc').textContent = `Explore our ${cat.name.toLowerCase()} educational posters collection`;
+  document.getElementById('breadcrumbSchema').textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.aquagel.lk/" },
+      { "@type": "ListItem", "position": 2, "name": cat.name, "item": `https://www.aquagel.lk/category.html?cat=${catId}` }
+    ]
+  });
+
+  function renderProducts(prods) {
+    const grid = document.getElementById('productsGrid');
+    const noRes = document.getElementById('noResults');
+    document.getElementById('resultsCount').textContent = `${prods.length} product${prods.length !== 1 ? 's' : ''}`;
+    if (!prods.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
+    noRes.style.display = 'none';
+    grid.innerHTML = prods.map(p => buildProductCard(p, cats)).join('');
+  }
+
+  renderProducts(currentProducts);
+
+  document.getElementById('sortSelect').addEventListener('change', function() {
+    let sorted = [...currentProducts];
+    if (this.value === 'name-asc') sorted.sort((a,b) => a.name.localeCompare(b.name));
+    if (this.value === 'name-desc') sorted.sort((a,b) => b.name.localeCompare(a.name));
+    if (this.value === 'newest') sorted.sort((a,b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+    renderProducts(sorted);
+  });
+
+  // ── Other categories ──
+  document.getElementById('otherCats').innerHTML = cats.filter(c => c.id !== catId).map(c => {
+    const count = getProducts().filter(p => p.category === c.id).length;
+    return `<a href="category.html?cat=${c.id}" class="cat-card">
+      <span class="cat-icon">${c.icon}</span>
+      <h3>${c.name}</h3>
+      <div class="cat-count">${count} poster${count !== 1 ? 's' : ''}</div>
+    </a>`;
+  }).join('');
+</script>
+</body>
+</html>

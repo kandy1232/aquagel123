@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Search Products | Aquagel Educational Posters Sri Lanka</title>
+  <meta name="description" content="Search Aquagel educational maps and posters. Find world maps, Sri Lanka maps, solar system, human body posters and more.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="header">
+  <nav class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="logo"><div class="logo-icon">🗺️</div>Aqua<span>gel</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li class="nav-dropdown"><span>Categories ▾</span><div class="dropdown-menu" id="catDropdown"></div></li>
+        <li><a href="giant-posters.html">Giant Posters</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="nav-search">
+        <button id="navSearchBtn">🔍</button>
+        <input id="navSearchInput" type="text" placeholder="Search posters...">
+      </div>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">🏠 Home</a>
+    <div id="mobileCatLinks"></div>
+    <a href="giant-posters.html">🎨 Giant Posters</a>
+  </div>
+</header>
+
+<section class="search-hero">
+  <div class="container">
+    <h1>Search Products</h1>
+    <div class="search-box-big" style="margin-top:20px">
+      <input id="searchInput" type="text" placeholder="Search for maps, posters, subjects...">
+      <button id="searchBtn">🔍 Search</button>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar">
+      <label>Category:</label>
+      <select id="catFilter">
+        <option value="all">All Categories</option>
+      </select>
+      <label>Sort:</label>
+      <select id="sortSelect">
+        <option value="default">Default</option>
+        <option value="name-asc">Name A–Z</option>
+        <option value="newest">Newest First</option>
+      </select>
+      <span class="results-count" id="resultsCount"></span>
+    </div>
+    <div class="products-grid" id="searchResults"></div>
+    <div id="noResults" class="no-results" style="display:none">
+      <div class="icon">🔍</div>
+      <h3 id="noResultsTitle">Start searching</h3>
+      <p id="noResultsText">Enter a keyword to find educational posters and maps.</p>
+    </div>
+  </div>
+</section>
+
+<footer style="background:var(--navy-dark);color:rgba(255,255,255,0.7);padding:28px 0;text-align:center">
+  <div class="container">
+    <div class="logo" style="justify-content:center;margin-bottom:12px"><div class="logo-icon">🗺️</div>Aqua<span style="color:var(--gold)">gel</span></div>
+    <p style="font-size:0.8rem;color:var(--gray-500)">© 2024 Aquagel Educational Posters. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+  const cats = getCategories();
+  const allProducts = getProducts();
+  let currentResults = allProducts;
+
+  // Populate cat filter
+  const catFilter = document.getElementById('catFilter');
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = `${c.icon} ${c.name}`;
+    catFilter.appendChild(opt);
+  });
+
+  // URL query param
+  const params = new URLSearchParams(window.location.search);
+  const initialQ = params.get('q') || '';
+  if (initialQ) {
+    document.getElementById('searchInput').value = initialQ;
+    document.getElementById('pageTitle').textContent = `"${initialQ}" | Aquagel Search`;
+  }
+
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    const catVal = catFilter.value;
+    const sort = document.getElementById('sortSelect').value;
+
+    let results = allProducts.filter(p => {
+      const matchQ = !q || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+      const matchCat = catVal === 'all' || p.category === parseInt(catVal);
+      return matchQ && matchCat;
+    });
+
+    if (sort === 'name-asc') results.sort((a,b) => a.name.localeCompare(b.name));
+    if (sort === 'newest') results.sort((a,b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+    currentResults = results;
+    renderResults(results, q);
+
+    // Update URL
+    const url = new URL(window.location);
+    if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+    window.history.replaceState({}, '', url);
+  }
+
+  function renderResults(results, q) {
+    const grid = document.getElementById('searchResults');
+    const noRes = document.getElementById('noResults');
+    document.getElementById('resultsCount').textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
+
+    if (!results.length) {
+      grid.innerHTML = '';
+      noRes.style.display = 'block';
+      document.getElementById('noResultsTitle').textContent = q ? `No results for "${q}"` : 'No products found';
+      document.getElementById('noResultsText').textContent = q ? 'Try different keywords or browse categories.' : 'Enter a keyword to search.';
+      return;
+    }
+    noRes.style.display = 'none';
+    grid.innerHTML = results.map(p => buildProductCard(p, cats)).join('');
+  }
+
+  document.getElementById('searchBtn').addEventListener('click', doSearch);
+  document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+  catFilter.addEventListener('change', doSearch);
+  document.getElementById('sortSelect').addEventListener('change', doSearch);
+
+  // Auto-search on load if query present
+  if (initialQ) doSearch();
+  else {
+    // Show all products
+    renderResults(allProducts, '');
+    document.getElementById('resultsCount').textContent = `${allProducts.length} products`;
+  }
+</script>
+</body>
+</html>

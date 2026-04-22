@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Aquagel</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--gray-100); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab-nav { display: flex; gap: 4px; margin-bottom: 24px; background: var(--white); border-radius: var(--radius); padding: 6px; box-shadow: var(--shadow-sm); }
+    .tab-btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-family: 'Baloo 2', cursive; font-weight: 700; font-size: 0.875rem; background: transparent; color: var(--gray-500); transition: var(--transition); }
+    .tab-btn.active { background: var(--navy); color: var(--white); }
+    .tab-btn:hover:not(.active) { background: var(--gray-100); color: var(--navy); }
+    #adminApp { display: none; }
+    .img-preview { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; margin-top: 8px; border: 2px solid var(--gray-200); }
+    .cat-row { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--white); border-radius: var(--radius-sm); margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+    .cat-row .cat-name { flex: 1; font-weight: 700; }
+    .cat-row input { padding: 7px 12px; border: 1.5px solid var(--gray-200); border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.875rem; flex: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginScreen" class="admin-login">
+  <div class="admin-login-card">
+    <div style="font-size:3rem;margin-bottom:8px">🔐</div>
+    <div class="logo" style="justify-content:center;margin-bottom:8px"><div class="logo-icon">🗺️</div>Aqua<span>gel</span></div>
+    <h2>Admin Panel</h2>
+    <p>Sign in to manage your website</p>
+    <div class="form-group">
+      <label for="adminPassword">Password</label>
+      <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="loginError" style="display:none;color:#ef233c;font-size:0.85rem;margin-bottom:14px;text-align:left">❌ Incorrect password. Please try again.</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In →</button>
+    <p style="margin-top:14px;font-size:0.78rem;color:var(--gray-500)">Default password: <code>aquagel2024admin</code></p>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN APP ═══════════ -->
+<div id="adminApp" style="display:flex;min-height:100vh">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <a href="index.html" class="logo" style="font-size:1.2rem">
+      <div class="logo-icon" style="width:32px;height:32px;font-size:1rem">🗺️</div>
+      Aqua<span style="color:var(--gold)">gel</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="#" class="active" data-tab="dashboard" onclick="switchTab('dashboard',this)">📊 Dashboard</a>
+      <a href="#" data-tab="products" onclick="switchTab('products',this)">🖼️ Products</a>
+      <a href="#" data-tab="categories" onclick="switchTab('categories',this)">📂 Categories</a>
+      <a href="#" data-tab="giant" onclick="switchTab('giant',this)">🎨 Giant Posters</a>
+      <a href="#" data-tab="seo" onclick="switchTab('seo',this)">🔍 SEO Settings</a>
+    </nav>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.08);margin-top:auto">
+      <a href="index.html" style="color:rgba(255,255,255,0.6);font-size:0.8rem;display:flex;align-items:center;gap:6px">← View Website</a>
+      <button onclick="doLogout()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.8rem;cursor:pointer;margin-top:8px;display:flex;align-items:center;gap:6px">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main" style="flex:1">
+    <div class="admin-topbar">
+      <h1 id="adminPageTitle">Dashboard</h1>
+      <div style="font-size:0.875rem;color:var(--gray-500)">Welcome, Administrator 👋</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="admin-stats" id="adminStats"></div>
+      <div style="background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm)">
+        <h3 style="margin-bottom:16px">Recent Products</h3>
+        <div id="recentProducts"></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div id="tab-products" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <input type="text" id="productSearch" placeholder="🔍 Search products..." style="padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:50px;font-family:'Nunito',sans-serif;font-size:0.875rem;outline:none;width:260px">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Add Product</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="productsTable">
+          <thead><tr>
+            <th>Image</th><th>Name</th><th>Category</th><th>Description</th><th>Price</th><th>Giant?</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="productsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div id="tab-categories" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <p style="color:var(--gray-500);font-size:0.9rem">Manage your product categories</p>
+        <button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Add Category</button>
+      </div>
+      <div id="categoriesList"></div>
+    </div>
+
+    <!-- GIANT POSTERS -->
+    <div id="tab-giant" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <p style="color:var(--gray-500);font-size:0.9rem">Manage giant poster products</p>
+        <button class="btn btn-primary btn-sm" onclick="openProductModal(null, true)">+ Add Giant Poster</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Image</th><th>Name</th><th>Size</th><th>Description</th><th>Price</th><th>Actions</th></tr></thead>
+          <tbody id="giantTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEO -->
+    <div id="tab-seo" class="tab-content">
+      <div style="background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-sm);max-width:700px">
+        <h3 style="margin-bottom:20px">Homepage SEO Settings</h3>
+        <div class="form-group">
+          <label>Page Title (shown in Google results)</label>
+          <input type="text" id="seoTitle" placeholder="Aquagel Educational Maps & Posters | Sri Lanka">
+          <div style="font-size:0.75rem;color:var(--gray-500);margin-top:4px">Recommended: 50–60 characters</div>
+        </div>
+        <div class="form-group">
+          <label>Meta Description</label>
+          <textarea id="seoDesc" rows="3" placeholder="Buy educational maps and posters in Sri Lanka..."></textarea>
+          <div style="font-size:0.75rem;color:var(--gray-500);margin-top:4px">Recommended: 150–160 characters</div>
+        </div>
+        <div class="form-group">
+          <label>Keywords (comma separated)</label>
+          <textarea id="seoKeywords" rows="2" placeholder="educational posters Sri Lanka, world map poster..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveSEO()">💾 Save SEO Settings</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════ PRODUCT MODAL ═══════════ -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Product</h3>
+      <button class="modal-close" onclick="closeModal('productModal')">×</button>
+    </div>
+    <input type="hidden" id="editProductId">
+    <div class="form-group">
+      <label>Product Name *</label>
+      <input type="text" id="pName" placeholder="e.g. World Political Map">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="pCategory"></select>
+      </div>
+      <div class="form-group">
+        <label>Price</label>
+        <input type="text" id="pPrice" placeholder="e.g. LKR 350">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Image URL or Upload</label>
+      <input type="text" id="pImageUrl" placeholder="https://... or upload below" oninput="updateImgPreview()">
+      <input type="file" id="pImageFile" accept="image/*" style="margin-top:8px;font-size:0.85rem" onchange="handleImgUpload(event)">
+      <img id="imgPreview" class="img-preview" style="display:none">
+    </div>
+    <div class="form-group">
+      <label>Description <span style="font-size:0.75rem;color:var(--gray-500)">(max 12 words)</span></label>
+      <textarea id="pDescription" rows="2" placeholder="Brief educational description..." oninput="updateWordCount()"></textarea>
+      <div class="word-counter" id="wordCounter">0 / 12 words</div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="pIsGiant" onchange="toggleGiantFields()">
+      <label for="pIsGiant">🎨 This is a Giant Coloring Poster</label>
+    </div>
+    <div id="giantFields" style="display:none">
+      <div class="form-group">
+        <label>Giant Poster Size</label>
+        <select id="pGiantSize">
+          <option value="3x4">3×4 ft — Classroom Size</option>
+          <option value="6x4">6×4 ft — Display Size</option>
+          <option value="10x20">10×20 ft — Giant Wall Size</option>
+        </select>
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="pFeatured">
+      <label for="pFeatured">⭐ Featured Product (shown on homepage)</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('productModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveProductForm()">💾 Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CATEGORY MODAL ═══════════ -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3>Add Category</h3>
+      <button class="modal-close" onclick="closeModal('catModal')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Category Name *</label>
+      <input type="text" id="newCatName" placeholder="e.g. Science Charts">
+    </div>
+    <div class="form-group">
+      <label>Icon (emoji)</label>
+      <input type="text" id="newCatIcon" placeholder="e.g. 🔬" maxlength="4">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('catModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="addCategory()">Add Category</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+// ── Auth ──
+const ADMIN_PASS = 'aquagel2024admin';
+
+function doLogin() {
+  const pw = document.getElementById('adminPassword').value;
+  if (pw === ADMIN_PASS) {
+    sessionStorage.setItem('aq_admin', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'flex';
+    initAdmin();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('aq_admin');
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminPassword').value = '';
+}
+
+// Check session
+if (sessionStorage.getItem('aq_admin') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'flex';
+  document.addEventListener('DOMContentLoaded', initAdmin);
+}
+
+function initAdmin() {
+  renderDashboard();
+  renderProductsTable();
+  renderCategoriesList();
+  renderGiantTable();
+  loadSEOForm();
+  populateCatSelect();
+}
+
+// ── Tab switching ──
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  const titles = { dashboard:'Dashboard', products:'Products', categories:'Categories', giant:'Giant Posters', seo:'SEO Settings' };
+  document.getElementById('adminPageTitle').textContent = titles[tab] || tab;
+  if (tab === 'products') renderProductsTable();
+  if (tab === 'categories') renderCategoriesList();
+  if (tab === 'giant') renderGiantTable();
+  return false;
+}
+
+// ── Dashboard ──
+function renderDashboard() {
+  const products = getProducts();
+  const cats = getCategories();
+  const stats = [
+    { icon:'🖼️', num: products.length, lbl:'Total Products', color:'#e8f4fd' },
+    { icon:'📂', num: cats.length, lbl:'Categories', color:'#fef3e2' },
+    { icon:'🎨', num: getGiantPosters().length, lbl:'Giant Posters', color:'#fce8f3' },
+    { icon:'⭐', num: getFeaturedProducts().length, lbl:'Featured', color:'#e8fdf0' }
+  ];
+  document.getElementById('adminStats').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-icon" style="background:${s.color}">${s.icon}</div>
+      <div><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>
+    </div>`).join('');
+
+  const recent = products.slice(-5).reverse();
+  document.getElementById('recentProducts').innerHTML = `
+    <table class="data-table"><thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th></tr></thead>
+    <tbody>${recent.map(p => {
+      const cat = getCategories().find(c => c.id === p.category);
+      return `<tr>
+        <td><img src="${p.imageUrl}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x40?text=IMG'"></td>
+        <td><strong>${p.name}</strong></td>
+        <td>${cat?.icon} ${cat?.name || ''}</td>
+        <td>${p.price}</td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+// ── Products Table ──
+function renderProductsTable(filter = '') {
+  const cats = getCategories();
+  let products = getProducts();
+  if (filter) products = products.filter(p =>
+    p.name.toLowerCase().includes(filter) || p.description.toLowerCase().includes(filter));
+  document.getElementById('productsTableBody').innerHTML = products.map(p => {
+    const cat = cats.find(c => c.id === p.category);
+    return `<tr>
+      <td><img src="${p.imageUrl}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x40?text=IMG'"></td>
+      <td><strong>${p.name}</strong>${p.featured ? ' ⭐' : ''}</td>
+      <td>${cat?.icon || ''} ${cat?.name || ''}</td>
+      <td style="font-size:0.8rem;max-width:180px">${p.description}</td>
+      <td>${p.price}</td>
+      <td>${p.isGiantPoster ? `<span class="badge badge-gold">${p.giantSize}</span>` : '—'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openProductModal('${p.id}')">Edit</button>
+          <button class="btn-delete" onclick="confirmDelete('${p.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--gray-500);padding:24px">No products found</td></tr>';
+}
+
+document.getElementById('productSearch')?.addEventListener('input', function() {
+  renderProductsTable(this.value.toLowerCase().trim());
+});
+
+// ── Categories ──
+function renderCategoriesList() {
+  const cats = getCategories();
+  document.getElementById('categoriesList').innerHTML = cats.map(c => `
+    <div class="cat-row" id="catRow_${c.id}">
+      <span style="font-size:1.5rem">${c.icon}</span>
+      <span class="cat-name">${c.name}</span>
+      <span style="font-size:0.8rem;color:var(--gray-500)">${getProducts().filter(p=>p.category===c.id).length} products</span>
+      <button class="btn-edit" onclick="editCatInline(${c.id})">Edit</button>
+      <button class="btn-delete" onclick="deleteCat(${c.id})">Delete</button>
+    </div>`).join('');
+}
+
+function editCatInline(id) {
+  const cats = getCategories();
+  const cat = cats.find(c => c.id === id);
+  const row = document.getElementById(`catRow_${id}`);
+  row.innerHTML = `
+    <input type="text" value="${cat.icon}" id="editIcon_${id}" style="width:60px;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:6px">
+    <input type="text" value="${cat.name}" id="editName_${id}" style="flex:1;padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:6px;font-family:'Nunito',sans-serif">
+    <button class="btn-edit" onclick="saveCatEdit(${id})">Save</button>
+    <button class="btn-delete" onclick="renderCategoriesList()">Cancel</button>`;
+}
+
+function saveCatEdit(id) {
+  const cats = getCategories();
+  const cat = cats.find(c => c.id === id);
+  cat.icon = document.getElementById(`editIcon_${id}`).value.trim() || cat.icon;
+  cat.name = document.getElementById(`editName_${id}`).value.trim() || cat.name;
+  saveCategories(cats);
+  renderCategoriesList();
+  showToast('Category updated!');
+}
+
+function deleteCat(id) {
+  const count = getProducts().filter(p => p.category === id).length;
+  if (count > 0 && !confirm(`This category has ${count} products. Deleting it will leave those products without a category. Continue?`)) return;
+  if (!confirm('Delete this category?')) return;
+  const cats = getCategories().filter(c => c.id !== id);
+  saveCategories(cats);
+  renderCategoriesList();
+  showToast('Category deleted.');
+}
+
+function openCatModal() {
+  document.getElementById('newCatName').value = '';
+  document.getElementById('newCatIcon').value = '';
+  document.getElementById('catModal').classList.add('open');
+}
+
+function addCategory() {
+  const name = document.getElementById('newCatName').value.trim();
+  const icon = document.getElementById('newCatIcon').value.trim() || '📄';
+  if (!name) { showToast('Category name is required', 'error'); return; }
+  const cats = getCategories();
+  const maxId = Math.max(...cats.map(c => c.id), -1);
+  cats.push({ id: maxId + 1, name, icon, slug: name.toLowerCase().replace(/\s+/g, '-') });
+  saveCategories(cats);
+  closeModal('catModal');
+  renderCategoriesList();
+  populateCatSelect();
+  showToast('Category added!');
+}
+
+// ── Giant Posters Table ──
+function renderGiantTable() {
+  const cats = getCategories();
+  const giants = getGiantPosters();
+  document.getElementById('giantTableBody').innerHTML = giants.map(p => `
+    <tr>
+      <td><img src="${p.imageUrl}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x40?text=IMG'"></td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-gold">${p.giantSize} ft</span></td>
+      <td style="font-size:0.8rem;max-width:200px">${p.description}</td>
+      <td>${p.price}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openProductModal('${p.id}')">Edit</button>
+          <button class="btn-delete" onclick="confirmDelete('${p.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:24px">No giant posters yet. Add one!</td></tr>';
+}
+
+// ── Product Modal ──
+function populateCatSelect() {
+  const cats = getCategories();
+  document.getElementById('pCategory').innerHTML = cats.map(c =>
+    `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+}
+
+function openProductModal(productId = null, forceGiant = false) {
+  populateCatSelect();
+  document.getElementById('modalTitle').textContent = productId ? 'Edit Product' : 'Add Product';
+  document.getElementById('editProductId').value = productId || '';
+  document.getElementById('imgPreview').style.display = 'none';
+
+  if (productId) {
+    const p = getProductById(productId);
+    if (!p) return;
+    document.getElementById('pName').value = p.name;
+    document.getElementById('pCategory').value = p.category;
+    document.getElementById('pPrice').value = p.price;
+    document.getElementById('pImageUrl').value = p.imageUrl;
+    document.getElementById('pDescription').value = p.description;
+    document.getElementById('pIsGiant').checked = p.isGiantPoster;
+    document.getElementById('pFeatured').checked = p.featured;
+    if (p.isGiantPoster) { document.getElementById('pGiantSize').value = p.giantSize || '3x4'; document.getElementById('giantFields').style.display = 'block'; }
+    else document.getElementById('giantFields').style.display = 'none';
+    updateImgPreview();
+    updateWordCount();
+  } else {
+    document.getElementById('pName').value = '';
+    document.getElementById('pCategory').value = '0';
+    document.getElementById('pPrice').value = '';
+    document.getElementById('pImageUrl').value = '';
+    document.getElementById('pDescription').value = '';
+    document.getElementById('pIsGiant').checked = forceGiant;
+    document.getElementById('pFeatured').checked = false;
+    document.getElementById('giantFields').style.display = forceGiant ? 'block' : 'none';
+    document.getElementById('wordCounter').textContent = '0 / 12 words';
+    document.getElementById('wordCounter').classList.remove('warn');
+  }
+  document.getElementById('productModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function updateImgPreview() {
+  const url = document.getElementById('pImageUrl').value.trim();
+  const preview = document.getElementById('imgPreview');
+  if (url) { preview.src = url; preview.style.display = 'block'; }
+  else preview.style.display = 'none';
+}
+
+function handleImgUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('pImageUrl').value = e.target.result;
+    updateImgPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateWordCount() {
+  const desc = document.getElementById('pDescription').value;
+  const words = desc.trim() ? desc.trim().split(/\s+/).length : 0;
+  const counter = document.getElementById('wordCounter');
+  counter.textContent = `${words} / 12 words`;
+  counter.classList.toggle('warn', words > 12);
+}
+
+function toggleGiantFields() {
+  document.getElementById('giantFields').style.display =
+    document.getElementById('pIsGiant').checked ? 'block' : 'none';
+}
+
+function saveProductForm() {
+  const name = document.getElementById('pName').value.trim();
+  const desc = document.getElementById('pDescription').value.trim();
+  if (!name) { showToast('Product name is required', 'error'); return; }
+  const words = desc ? desc.split(/\s+/).length : 0;
+  if (words > 12) { showToast('Description must be 12 words or less', 'error'); return; }
+
+  const isGiant = document.getElementById('pIsGiant').checked;
+  const product = {
+    id: document.getElementById('editProductId').value || null,
+    name,
+    category: parseInt(document.getElementById('pCategory').value),
+    description: truncateDescription(desc),
+    imageUrl: document.getElementById('pImageUrl').value.trim() || 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80',
+    price: document.getElementById('pPrice').value.trim() || 'Contact for price',
+    isGiantPoster: isGiant,
+    giantSize: isGiant ? document.getElementById('pGiantSize').value : null,
+    featured: document.getElementById('pFeatured').checked
+  };
+
+  saveProduct(product);
+  closeModal('productModal');
+  renderProductsTable();
+  renderGiantTable();
+  renderDashboard();
+  showToast(document.getElementById('editProductId').value ? 'Product updated!' : 'Product added!');
+}
+
+function confirmDelete(id) {
+  const p = getProductById(id);
+  if (!p) return;
+  if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
+    deleteProduct(id);
+    renderProductsTable();
+    renderGiantTable();
+    renderDashboard();
+    showToast('Product deleted.');
+  }
+}
+
+// ── SEO ──
+function loadSEOForm() {
+  const seo = getSEOSettings();
+  document.getElementById('seoTitle').value = seo.homeTitle;
+  document.getElementById('seoDesc').value = seo.homeDesc;
+  document.getElementById('seoKeywords').value = seo.homeKeywords;
+}
+
+function saveSEO() {
+  saveSEOSettings({
+    homeTitle: document.getElementById('seoTitle').value,
+    homeDesc: document.getElementById('seoDesc').value,
+    homeKeywords: document.getElementById('seoKeywords').value
+  });
+  showToast('SEO settings saved!');
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Product | Aquagel Educational Posters</title>
+  <meta name="description" id="pageDesc" content="Buy educational posters in Sri Lanka from Aquagel.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" id="pageCanon" href="https://www.aquagel.lk/product.html">
+  <meta property="og:type" content="product">
+  <meta property="og:title" id="ogTitle" content="Aquagel Product">
+  <meta property="og:image" id="ogImage" content="">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="application/ld+json" id="productSchema"></script>
+</head>
+<body>
+
+<header id="header">
+  <nav class="container">
+    <div class="nav-inner">
+      <a href="index.html" class="logo"><div class="logo-icon">🗺️</div>Aqua<span>gel</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li class="nav-dropdown"><span>Categories ▾</span><div class="dropdown-menu" id="catDropdown"></div></li>
+        <li><a href="giant-posters.html">Giant Posters</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="nav-search">
+        <button id="navSearchBtn">🔍</button>
+        <input id="navSearchInput" type="text" placeholder="Search posters...">
+      </div>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">🏠 Home</a>
+    <div id="mobileCatLinks"></div>
+    <a href="giant-posters.html">🎨 Giant Posters</a>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+    <div id="productContent"></div>
+    <div id="notFound" style="display:none" class="no-results">
+      <div class="icon">😕</div>
+      <h3>Product not found</h3>
+      <p>This product may have been removed or the link is incorrect.</p>
+      <a href="index.html" class="btn btn-primary" style="margin-top:20px">Back to Home</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--gray-100)" id="relatedSection" aria-labelledby="related-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="related-heading">Related Products</h2>
+      <div class="underline"></div>
+    </div>
+    <div class="products-grid" id="relatedProducts"></div>
+  </div>
+</section>
+
+<footer style="background:var(--navy-dark);color:rgba(255,255,255,0.7);padding:28px 0;text-align:center">
+  <div class="container">
+    <div class="logo" style="justify-content:center;margin-bottom:12px"><div class="logo-icon">🗺️</div>Aqua<span style="color:var(--gold)">gel</span></div>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;font-size:0.875rem">
+      <a href="index.html" style="color:rgba(255,255,255,0.7)">Home</a>
+      <a href="giant-posters.html" style="color:rgba(255,255,255,0.7)">Giant Posters</a>
+      <a href="search.html" style="color:rgba(255,255,255,0.7)">All Products</a>
+    </div>
+    <p style="font-size:0.8rem;color:var(--gray-500)">© 2024 Aquagel. All rights reserved.</p>
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('id');
+  const cats = getCategories();
+  const product = getProductById(productId);
+
+  if (!product) {
+    document.getElementById('notFound').style.display = 'block';
+    document.getElementById('relatedSection').style.display = 'none';
+  } else {
+    const cat = cats.find(c => c.id === product.category);
+
+    // ── SEO ──
+    document.getElementById('pageTitle').textContent = `${product.name} | Aquagel Educational Posters Sri Lanka`;
+    document.getElementById('pageDesc').content = `Buy ${product.name} - ${product.description}. Available from Aquagel Sri Lanka.`;
+    document.getElementById('ogTitle').content = product.name;
+    document.getElementById('ogImage').content = product.imageUrl;
+    document.getElementById('productSchema').textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": product.name,
+      "description": product.description,
+      "image": product.imageUrl,
+      "brand": { "@type": "Brand", "name": "Aquagel" },
+      "offers": { "@type": "Offer", "priceCurrency": "LKR", "availability": "https://schema.org/InStock" },
+      "category": cat?.name
+    });
+
+    // ── Breadcrumb ──
+    document.getElementById('breadcrumb').innerHTML = `
+      <a href="index.html">Home</a><span>›</span>
+      <a href="category.html?cat=${product.category}">${cat?.name || 'Category'}</a><span>›</span>
+      <span>${product.name}</span>`;
+
+    // ── Product content ──
+    document.getElementById('productContent').innerHTML = `
+      <div class="product-detail">
+        <div class="product-detail-img fade-up">
+          <img src="${product.imageUrl}" alt="${product.name} - ${cat?.name} educational poster" loading="eager"
+               onerror="this.src='https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80'">
+          ${product.isGiantPoster ? `<div style="position:absolute;top:14px;left:14px"><span class="badge badge-gold" style="font-size:0.85rem;padding:6px 14px">🎨 Giant Poster</span></div>` : ''}
+        </div>
+        <div class="product-detail-info fade-up delay-2">
+          <span class="badge badge-teal" style="margin-bottom:12px;display:inline-block">${cat?.icon || ''} ${cat?.name || ''}</span>
+          <h1>${product.name}</h1>
+          <div class="price">${product.price}</div>
+          <p class="description">${product.description}</p>
+          ${product.isGiantPoster ? `
+          <div style="background:rgba(255,183,3,0.1);border:1px solid rgba(255,183,3,0.3);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px">
+            <strong>🎨 Giant Poster Size:</strong> ${product.giantSize || 'Available'} ft
+          </div>` : ''}
+          <div class="product-detail-actions">
+            <button class="btn btn-wa" onclick="enquireProduct('${product.name}', '${product.price}')">📱 Enquire on WhatsApp</button>
+            <a href="category.html?cat=${product.category}" class="btn btn-outline">← Back to ${cat?.name}</a>
+          </div>
+          <dl class="product-meta">
+            <dt>Category</dt><dd>${cat?.icon} ${cat?.name}</dd>
+            <dt>Brand</dt><dd>Aquagel</dd>
+            <dt>Price</dt><dd>${product.price}</dd>
+            ${product.isGiantPoster ? `<dt>Giant Size</dt><dd>${product.giantSize} ft</dd>` : ''}
+            <dt>Availability</dt><dd style="color:#16a34a">✅ In Stock</dd>
+            <dt>Delivery</dt><dd>Island-wide delivery available</dd>
+          </dl>
+        </div>
+      </div>`;
+
+    // ── Related Products ──
+    const related = getProductsByCategory(product.category).filter(p => p.id !== product.id).slice(0, 4);
+    if (related.length) {
+      document.getElementById('relatedProducts').innerHTML = related.map(p => buildProductCard(p, cats)).join('');
+    } else {
+      document.getElementById('relatedSection').style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
